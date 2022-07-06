@@ -1,16 +1,16 @@
 import {Movement} from "../movement-enum";
 import {Utils} from "../../utils/utils";
 import {Position} from "../utils/position";
+import {Entity} from "./Entity";
 
-export class Cell {
+export class Cell extends Entity {
 
     public readonly movements: Movement[]
     private nbMovements: number
-    private pos: Position
     private isAtEnd: boolean
 
-    constructor(pos: Position, movements?: Movement[]) {
-        this.pos = pos
+    constructor(pos: Position, size: number, movements?: Movement[]) {
+        super(pos, size)
         this.isAtEnd = false
         this.nbMovements = 0
         function randomMovements(number: number) {
@@ -27,13 +27,14 @@ export class Cell {
         else this.movements = movements
     }
 
-    public getPos(): Position {
-        return this.pos
-    }
-
-    public updatePos(endPointPosition: Position) {
-        if(this.isAtEnd) return
+    public updatePos(endPointPosition: Position): boolean {
+        if(this.isAtEnd) return false
         this.pos = this.pos.updatePos(this.movements[this.nbMovements++])
-        if(Position.isPosInPos(this.pos.x, this.pos.y, 4, 4, endPointPosition.x, endPointPosition.y, 40, 40)) this.isAtEnd = true
+        if(Position.isPosInPos(this.pos.x, this.pos.y, 4, 4, endPointPosition.x, endPointPosition.y, 40, 40)){
+            //only return true here to avoid repetition of returning true
+            this.isAtEnd = true
+            return true
+        }
+        return false
     }
 }

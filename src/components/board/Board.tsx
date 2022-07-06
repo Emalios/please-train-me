@@ -6,11 +6,13 @@ interface CanvasProps {
     width: number;
     height: number;
     endPointSize: number;
+    per: number;
+    cellSize: number;
     isStarted: boolean;
     nbCells: number
 }
 
-const Board = ({ width, height, endPointSize, isStarted, nbCells }: CanvasProps) => {
+const Board = ({ width, height, endPointSize, isStarted, nbCells, cellSize, per }: CanvasProps) => {
 
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -44,14 +46,13 @@ const Board = ({ width, height, endPointSize, isStarted, nbCells }: CanvasProps)
             return;
         }
 
-        const cellSize = 4
         const baseX = width / 2 - cellSize / 2
         const baseY = height - height / 10 - cellSize / 2
 
         function initCells(): Cell[] {
             let cells = []
             for (let i = 0; i < nbCells; i++) {
-                cells.push(new Cell(new Position(baseX, baseY)))
+                cells.push(new Cell(new Position(baseX, baseY), cellSize))
             }
             return cells
         }
@@ -66,20 +67,22 @@ const Board = ({ width, height, endPointSize, isStarted, nbCells }: CanvasProps)
         async function iteration() {
             //Start iteration
             const running = true
-            let it = 1
             const maxIt = 99999
+            let numberOfCellAtEnd = 0
 
             if (!context) {
                 return;
             }
 
-            while (running && it <= maxIt) {
-                cells.forEach(cell => {
-                    cell.updatePos(endPointPosition)
-                })
+            while (running && numberOfCellAtEnd < per) {
                 renderBoard(context)
-                cells.forEach(cell => context.fillRect(cell.getPos().x, cell.getPos().y, 4, 4))
-                it++
+                cells.forEach(cell => {
+                    if(cell.updatePos(endPointPosition)) {
+                        console.log("number: " + (numberOfCellAtEnd + 1))
+                        numberOfCellAtEnd++
+                    }
+                    context.fillRect(cell.getPos().x, cell.getPos().y, cell.getSize(), cell.getSize())
+                })
                 await sleep(1)
             }
         }
